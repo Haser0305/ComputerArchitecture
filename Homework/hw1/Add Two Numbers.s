@@ -45,10 +45,14 @@ init:
     addi t0, t0, 8
     sw zero, -4(t0)    # put zero at the last node pointer
 
+    jal ra, main
+    j exit
 
 main:
     mv s3, gp    # s3 = l1
+    mv s5, ra    # store ra
     jal ra, count_l1_len    # update s2 to the len of l1
+    mv ra, s5    # recover ra
     slli t0, s2, 3    # *8 to get the addr of l2
     add s4, gp, t0    # s4 => base addr of l2
     li s1, 0    # s1 = carry
@@ -157,9 +161,12 @@ printAll:
     ecall
 
     lw t1, 4(a1)
-    beq t1, zero, exit
+    beq t1, zero, exitPrintAll
     lw a1, 4(a1)
     j printAll
+
+exitPrintAll:
+    jr ra
 
 exit:
     li a7, 10
