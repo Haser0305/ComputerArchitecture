@@ -211,15 +211,15 @@ checkCarry:
 checkCarryLoop:
     add t0, t0, s1    # value + carry
     blt t0, t1, exitCheckCarry    # no carry anymore
-    addi t0, t0, -10
-    sw t0, 0(a0)
-    lw t2, 4(a0)
-    beqz t2, exitCheckCarry
+    addi t0, t0, -10    # remove the unnecessary digit
+    sw t0, 0(a0)    # store the result
+    lw t2, 4(a0)    # read the next node addr
+    beqz t2, exitCheckCarry    # if this is the last node, go to exitCheckCarry
     mv a0, t2
     j checkCarryLoop
 
 exitCheckCarry:
-    bnez s1, createNodeForCarry
+    bnez s1, createNodeForCarry    # if the carry is not 0, create a new node for it
     sw t0, 0(a0)   # store the last result in the latest node
     mv a1, gp    # print all values begin at l1
     j printAll
@@ -229,7 +229,7 @@ createNodeForCarry:
     sw t2, 4(a0)
     sw zero, 4(t2)
     sw s1, 0(t2)
-    mv a1, gp
+    mv a1, gp    # prepare an arg for printAll
     j printAll
 
 noMoreNode:
@@ -260,15 +260,15 @@ exitCllLoop:
 
 printAll:
     # a1 is the base address
-    li a7, 1
-    lw a0, 0(a1)
+    li a7, 1    # set the system call to printInt
+    lw a0, 0(a1)    # the system call will print int in a0
     ecall
 
-    li a7, 4
+    li a7, 4    # just like above
     la a0, newline
     ecall
 
-    lw t1, 4(a1)
+    lw t1, 4(a1)    # check l1 is at the end or not
     beq t1, zero, exitPrintAll
     lw a1, 4(a1)
     j printAll
