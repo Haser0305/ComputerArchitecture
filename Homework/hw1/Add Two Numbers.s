@@ -1,11 +1,12 @@
 .data
-    star: .string "\0"
+    newline: .string "\n"
 .text
 init:
+    # test data 1
     mv t0, gp
     li t1, 8
     li t2, 2
-    li t3, 3
+    li t3, 4
 
     sw t1, 0(t0)
 
@@ -46,6 +47,102 @@ init:
     sw zero, -4(t0)    # put zero at the last node pointer
 
     jal ra, main
+
+    la a0, newline
+    li a7, 4
+    ecall
+
+    # test data 2
+    mv t0, gp
+    li t1, 1
+    li t2, 2
+    li t3, 3
+    li t4, 4
+
+    sw t1, 0(t0)
+
+    addi t0, t0, 8
+    sw t0, -4(t0)
+    sw t2, 0(t0)
+
+    addi t0, t0, 8
+    sw t0, -4(t0)
+    sw t3, 0(t0)
+
+    addi t0, t0, 8
+    sw t0, -4(t0)
+    sw t4, 0(t0)
+
+    li t1, 3
+    li t2, 2
+    li t3, 1
+
+    addi t0, t0, 8
+    sw zero, -4(t0)
+    sw t1, 0(t0)
+
+    addi t0, t0, 8
+    sw t0, -4(t0)
+    sw t2, 0(t0)
+
+    addi t0, t0, 8
+    sw t0, -4(t0)
+    sw t3, 0(t0)
+
+    addi t0, t0, 8
+    sw zero, -4(t0)
+
+    jal ra, main
+
+    la a0, newline
+    li a7, 4
+    ecall
+
+
+
+    # test data 3
+    mv t0, gp
+    li t1, 1
+    li t2, 2
+    li t3, 3
+
+    sw t1, 0(t0)
+
+    addi t0, t0, 8
+    sw t0, -4(t0)
+    sw t2, 0(t0)
+
+    addi t0, t0, 8
+    sw t0, -4(t0)
+    sw t3, 0(t0)
+
+
+    li t1, 3
+    li t2, 2
+    li t3, 1
+    li t4, 1
+
+    addi t0, t0, 8
+    sw zero, -4(t0)
+    sw t1, 0(t0)
+
+    addi t0, t0, 8
+    sw t0, -4(t0)
+    sw t2, 0(t0)
+
+    addi t0, t0, 8
+    sw t0, -4(t0)
+    sw t3, 0(t0)
+
+    addi t0, t0, 8
+    sw t0, -4(t0)
+    sw t4, 0(t0)
+
+    addi t0, t0, 8
+    sw zero, -4(t0)
+
+    jal ra, main
+
     j exit
 
 main:
@@ -111,18 +208,29 @@ checkCarry:
     # a0 is the base address that begin to check
     lw t0, 0(a0)
     li t1, 10    # t1 = 10
+checkCarryLoop:
     add t0, t0, s1    # value + carry
     blt t0, t1, exitCheckCarry    # no carry anymore
     addi t0, t0, -10
     sw t0, 0(a0)
-    lw a0, 4(a0)
-    j checkCarry
+    lw t2, 4(a0)
+    beqz t2, exitCheckCarry
+    mv a0, t2
+    j checkCarryLoop
 
 exitCheckCarry:
+    bnez s1, createNodeForCarry
     sw t0, 0(a0)   # store the last result in the latest node
     mv a1, gp    # print all values begin at l1
     j printAll
 
+createNodeForCarry:
+    addi t2, a0, 8
+    sw t2, 4(a0)
+    sw zero, 4(t2)
+    sw s1, 0(t2)
+    mv a1, gp
+    j printAll
 
 noMoreNode:
     # if both list do not have next node. just make sure to create a new node for carry
@@ -157,7 +265,7 @@ printAll:
     ecall
 
     li a7, 4
-    la a0, star
+    la a0, newline
     ecall
 
     lw t1, 4(a1)
